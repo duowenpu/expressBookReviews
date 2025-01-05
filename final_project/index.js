@@ -12,6 +12,17 @@ app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUni
 
 app.use("/customer/auth/*", function auth(req,res,next){
 //Write the authenication mechanism here
+    if (!req.session || !req.session.accessToken){
+        return res.status(401).json({error:"You need to login"});
+    }
+    try{
+        const decoded = jwt.verify(req.session.accessToken, "your_secret_key");
+        req.user = decoded;
+        next();
+    } catch(error){
+        req.session.destroy();
+        return res.status(401).json({error:"Wrong username or password"})
+    }
 });
  
 const PORT =5000;
